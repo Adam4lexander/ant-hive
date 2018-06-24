@@ -1,11 +1,18 @@
-const roomInfo = require("./room-info");
-const idleRole = require("./idle-role");
+import roomInfo from "./room-info";
+import idleRole from "./idle-role";
 
-module.exports = function(creep) {
+declare global {
+  interface CreepMemory {
+    repairTarget: string;
+    repairing: boolean;
+  }
+}
+
+function Repair(creep: Creep) {
   const memory = creep.memory;
 
   function RepairState() {
-    const repairTarget = Game.getObjectById(memory.repairTarget);
+    const repairTarget = Game.getObjectById(memory.repairTarget) as Structure;
 
     if (
       creep.carry.energy === 0 ||
@@ -53,4 +60,6 @@ module.exports = function(creep) {
   return {
     run: run
   };
-};
+}
+
+export default Repair;

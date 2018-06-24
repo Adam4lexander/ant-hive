@@ -1,4 +1,4 @@
-module.exports = function(tower) {
+function Tower(tower: StructureTower) {
   function run() {
     const repairTarget = getRepairTarget();
     console.log(repairTarget);
@@ -22,4 +22,6 @@ module.exports = function(tower) {
   return {
     run: run
   };
-};
+}
+
+export default Tower;

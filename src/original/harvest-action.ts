@@ -1,15 +1,27 @@
-const Action = require("./action");
+import { Action } from "./action";
 
-if (!Memory.harvesters) {
-  Memory.harvesters = {};
+declare global {
+  interface Memory {
+    harvesters: { [name: string]: string[] };
+  }
 }
+
+interface HarvestActionMemory {
+  target: string;
+  container: string;
+}
+
 const harvesters = Memory.harvesters;
 
 Action.register({
   name: "harvest",
-  entry(creep, memory, target) {
+  entry(creep, memory: HarvestActionMemory, target) {
     memory.target = target.id;
-    memory.container = creep.room.find(FIND_STRUCTURES, {filter: {structureType: STRUCTURE_CONTAINER}}).filter(c => target.pos.isNearTo(c))[0].id;
+    memory.container = creep.room
+      .find(FIND_STRUCTURES, {
+        filter: s => s.structureType === STRUCTURE_CONTAINER
+      })
+      .filter(c => target.pos.isNearTo(c))[0].id;
 
     if (memory.target in harvesters) {
       harvesters[memory.target].push(creep.id);
@@ -17,9 +29,11 @@ Action.register({
       harvesters[memory.target] = [creep.id];
     }
   },
-  tick(creep, memory) {
-    const target = Game.getObjectById(memory.target);
-    const container = Game.getObjectById(memory.container);
+  tick(creep, memory: HarvestActionMemory) {
+    const target = Game.getObjectById(memory.target) as Source;
+    const container = Game.getObjectById(memory.container) as Structure<
+      STRUCTURE_CONTAINER
+    >;
     if (!target || !container) {
       Action.pop(creep);
       return;
@@ -39,16 +53,18 @@ Action.register({
       Action.pop(creep);
     }
   },
-  exit(creep, memory) {
-    harvesters[memory.target] = harvesters[memory.target].filter(id => id !== creep.id);
+  exit(creep, memory: HarvestActionMemory) {
+    harvesters[memory.target] = harvesters[memory.target].filter(
+      (id: string) => id !== creep.id
+    );
     if (harvesters[memory.target].length === 0) {
       delete harvesters[memory.target];
     }
   }
-})
+});
 
-function numberOfHarvesters(source) {
+function numberOfHarvesters(source: Source) {
   return harvesters[source.id] ? harvesters[source.id].length : 0;
 }
 
-module.exports = { numberOfHarvesters };
+export default { numberOfHarvesters };

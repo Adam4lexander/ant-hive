@@ -1,10 +1,16 @@
-const roomInfo = require("./room-info");
-const idleRole = require("./idle-role");
-const repairRole = require("./repair-role");
+import roomInfo from "./room-info";
+import idleRole from "./idle-role";
+import repairRole from "./repair-role";
 
-var builderRole = {
+declare global {
+  interface CreepMemory {
+    building: boolean;
+  }
+}
+
+const builderRole = {
   /** @param {Creep} creep **/
-  run: function(creep) {
+  run: function(creep: Creep) {
     if (creep.memory.building && creep.carry.energy == 0) {
       creep.memory.building = false;
       creep.say("🔄 harvest");
@@ -34,4 +40,4 @@ var builderRole = {
   }
 };
 
-module.exports = builderRole;
+export default builderRole;

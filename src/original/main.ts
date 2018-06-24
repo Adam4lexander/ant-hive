@@ -1,10 +1,16 @@
-const harvesterRole = require("./harvester-role");
-const upgraderRole = require("./upgrader-role");
-const builderRole = require("./builder-role");
-const towerRole = require("./tower-role");
-const Action = require("./action");
-const roomInfo = require("./room-info");
-require("./register-actions");
+import harvesterRole from "./harvester-role";
+import upgraderRole from "./upgrader-role";
+import builderRole from "./builder-role";
+import towerRole from "./tower-role";
+import { Action, getIdleCreeps } from "./action";
+import roomInfo from "./room-info";
+import "./register-actions";
+
+declare global {
+  interface CreepMemory {
+    role: string;
+  }
+}
 
 function loop() {
   for (var name in Memory.creeps) {
@@ -18,20 +24,13 @@ function loop() {
     Game.creeps,
     creep => creep.memory.role == "harvester"
   );
-  const haulers = _.filter(
-    Game.creeps,
-    creep => creep.memory.role == "hauler"
-  );
+  const haulers = _.filter(Game.creeps, creep => creep.memory.role == "hauler");
   if (haulers.length < 2) {
     const newName = "Hauler" + Game.time;
     console.log("Spawning new hauler: " + newName);
-    Game.spawns["Genesis"].spawnCreep(
-      [CARRY, CARRY, MOVE],
-      newName,
-      {
-        memory: { role: "hauler" }
-      }
-    )
+    Game.spawns["Genesis"].spawnCreep([CARRY, CARRY, MOVE], newName, {
+      memory: { role: "hauler" } as CreepMemory
+    });
   } else if (harvesters.length < 2) {
     const newName = "Harvester" + Game.time;
     console.log("Spawning new harvester: " + newName);
@@ -39,10 +38,10 @@ function loop() {
       [WORK, WORK, WORK, WORK, CARRY, MOVE, MOVE],
       newName,
       {
-        memory: { role: "harvester" }
+        memory: { role: "harvester" } as CreepMemory
       }
     );
-  }  else {
+  } else {
     const upgraders = _.filter(
       Game.creeps,
       creep => creep.memory.role == "upgrader"
@@ -54,7 +53,7 @@ function loop() {
         [WORK, WORK, CARRY, CARRY, MOVE, MOVE],
         newName,
         {
-          memory: { role: "upgrader" }
+          memory: { role: "upgrader" } as CreepMemory
         }
       );
     }
@@ -70,17 +69,11 @@ function loop() {
         [WORK, WORK, CARRY, CARRY, MOVE, MOVE],
         newName,
         {
-          memory: { role: "builder" }
+          memory: { role: "builder" } as CreepMemory
         }
       );
     }
   }
-
-  const towers = _.filter(
-    Game.structures,
-    struct => struct.structureType === STRUCTURE_TOWER
-  );
-  towers.forEach(tower => towerRole(tower).run());
 
   for (var name in Game.creeps) {
     var creep = Game.creeps[name];
@@ -92,7 +85,7 @@ function loop() {
     }
   }
 
-  for (let creep of Action.getIdleCreeps()) {
+  for (let creep of getIdleCreeps()) {
     if (creep.memory.role === "hauler") {
       Action.push(creep, "haul");
     } else if (creep.memory.role === "harvester") {
@@ -103,4 +96,4 @@ function loop() {
   Action.tick();
 }
 
-exports.loop = loop;
+export default loop;
