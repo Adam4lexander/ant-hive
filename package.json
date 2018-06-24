@@ -1,5 +1,5 @@
 {
-  "name": "screeps-typescript-starter",
+  "name": "ant-hive",
   "version": "3.0.0",
   "description": "",
   "main": "index.js",
@@ -17,7 +17,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/screepers/screeps-typescript-starter.git"
+    "url": "git+https://github.com/Adam4lexander/ant-hive.git"
   },
   "author": "",
   "license": "Unlicense",
