@@ -7,6 +7,7 @@ declare global {
 }
 
 interface HarvestActionMemory {
+  creepId: string;
   target: string;
   container: string;
 }
@@ -16,6 +17,7 @@ const harvesters = Memory.harvesters;
 Action.register({
   name: "harvest",
   entry(creep, memory: HarvestActionMemory, target) {
+    memory.creepId = creep.id;
     memory.target = target.id;
     memory.container = creep.room
       .find(FIND_STRUCTURES, {
@@ -55,7 +57,7 @@ Action.register({
   },
   exit(creep, memory: HarvestActionMemory) {
     harvesters[memory.target] = harvesters[memory.target].filter(
-      (id: string) => id !== creep.id
+      (id: string) => id !== memory.creepId
     );
     if (harvesters[memory.target].length === 0) {
       delete harvesters[memory.target];

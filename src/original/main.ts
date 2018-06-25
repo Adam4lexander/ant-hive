@@ -13,13 +13,6 @@ declare global {
 }
 
 function loop() {
-  for (var name in Memory.creeps) {
-    if (!Game.creeps[name]) {
-      delete Memory.creeps[name];
-      console.log("Clearing non-existing creep memory:", name);
-    }
-  }
-
   const harvesters = _.filter(
     Game.creeps,
     creep => creep.memory.role == "harvester"
@@ -94,6 +87,18 @@ function loop() {
   }
 
   Action.tick();
+
+  // Do this last so other steps can do cleanup
+  removeStaleMemory();
+}
+
+function removeStaleMemory(): void {
+  for (let name in Memory.creeps) {
+    if (!Game.creeps[name]) {
+      delete Memory.creeps[name];
+      console.log("Clearing non-existing creep memory:", name);
+    }
+  }
 }
 
 export default loop;

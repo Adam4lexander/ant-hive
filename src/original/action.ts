@@ -10,7 +10,7 @@ interface ActionBase<T> {
   readonly name: string;
   readonly entry?: (creep: Creep, memory: T, ...args: any[]) => void;
   readonly tick?: (creep: Creep, memory: T) => void;
-  readonly exit?: (creep: Creep, memory: T) => void;
+  readonly exit?: (creep: Creep | undefined, memory: T) => void;
 }
 
 interface ActionStackItem<T> {
@@ -100,16 +100,38 @@ function stop(creep: Creep) {
   }
 }
 
+function removeStaleActionStack(stack: ActionStackItem<any>[]) {
+  while (stack.length > 0) {
+    const stackItem = stack[stack.length - 1];
+    const action = Actions[stackItem.actionId];
+    if (!action) {
+      console.log(`Unknown action ${stackItem.actionId} in stale stack.`);
+      return;
+    }
+    if (typeof action.exit === "function") {
+      try {
+        action.exit(undefined, stackItem.memory);
+      } catch (e) {
+        console.log(
+          `critical error ${stackItem.actionId}.exit in stale stack`,
+          e
+        );
+      }
+      stack.pop();
+    }
+  }
+}
+
 function tick() {
-  for (let name in Game.creeps) {
+  for (let name in Memory.creeps) {
+    if (!Game.creeps[name]) {
+      // This creep has died, need to 'exit()' each action on its stack.
+      removeStaleActionStack(Memory.creeps[name].actions);
+      continue;
+    }
     const creep = Game.creeps[name];
     const stack = stackOf(creep);
     if (stack.length < 1) {
-      continue;
-    }
-    const ticksToLive = creep.ticksToLive;
-    if (typeof ticksToLive === "number" && ticksToLive <= 1) {
-      stop(creep);
       continue;
     }
     const lastItem = stack[stack.length - 1];
