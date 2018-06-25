@@ -117,8 +117,8 @@ function removeStaleActionStack(stack: ActionStackItem<any>[]) {
           e
         );
       }
-      stack.pop();
     }
+    stack.pop();
   }
 }
 
