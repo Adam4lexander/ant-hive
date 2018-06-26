@@ -1,4 +1,3 @@
-import harvesterRole from "./harvester-role";
 import upgraderRole from "./upgrader-role";
 import builderRole from "./builder-role";
 import towerRole from "./tower-role";
