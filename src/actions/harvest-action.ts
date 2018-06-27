@@ -1,10 +1,5 @@
 import { Action } from "./action";
-
-declare global {
-  interface Memory {
-    harvesters: { [name: string]: string[] };
-  }
-}
+import Locks from "../utils/object-locks";
 
 interface HarvestActionMemory {
   creepId: string;
@@ -12,7 +7,7 @@ interface HarvestActionMemory {
   container: string;
 }
 
-const harvesters = Memory.harvesters;
+const locks = Locks("harvest");
 
 Action.register({
   name: "harvest",
@@ -25,11 +20,7 @@ Action.register({
       })
       .filter(c => target.pos.isNearTo(c))[0].id;
 
-    if (memory.target in harvesters) {
-      harvesters[memory.target].push(creep.id);
-    } else {
-      harvesters[memory.target] = [creep.id];
-    }
+    locks.on(memory.target).acquireFor(memory.creepId);
   },
   tick(creep, memory: HarvestActionMemory) {
     const target = Game.getObjectById(memory.target) as Source;
@@ -56,17 +47,12 @@ Action.register({
     }
   },
   exit(creep, memory: HarvestActionMemory) {
-    harvesters[memory.target] = harvesters[memory.target].filter(
-      (id: string) => id !== memory.creepId
-    );
-    if (harvesters[memory.target].length === 0) {
-      delete harvesters[memory.target];
-    }
+    locks.on(memory.target).releaseFor(memory.creepId);
   }
 });
 
 function numberOfHarvesters(source: Source) {
-  return harvesters[source.id] ? harvesters[source.id].length : 0;
+  return locks.on(source.id).count();
 }
 
 export default { numberOfHarvesters };
