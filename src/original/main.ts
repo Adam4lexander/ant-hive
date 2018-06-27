@@ -1,11 +1,10 @@
 import upgraderRole from "./upgrader-role";
-import builderRole from "./builder-role";
 import towerRole from "./tower-role";
-import { Action, getIdleCreeps } from "./action";
+import { Action, getIdleCreeps } from "../actions/action";
 import roomInfo from "./room-info";
 import "./register-actions";
-import { getConstructionSite } from "./build-action";
-import { getMostDamagedStructure } from "./repair-action";
+import { getConstructionSite } from "../actions/build-action";
+import { getMostDamagedStructure } from "../actions/repair-action";
 import Locks from "../utils/object-locks";
 
 declare global {
