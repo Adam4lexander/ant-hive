@@ -4,6 +4,9 @@ import towerRole from "./tower-role";
 import { Action, getIdleCreeps } from "./action";
 import roomInfo from "./room-info";
 import "./register-actions";
+import { getConstructionSite } from "./build-action";
+import { getMostDamagedStructure } from "./repair-action";
+import Locks from "../utils/object-locks";
 
 declare global {
   interface CreepMemory {
@@ -72,9 +75,6 @@ function loop() {
     if (creep.memory.role == "upgrader") {
       upgraderRole.run(creep);
     }
-    if (creep.memory.role == "builder") {
-      builderRole.run(creep);
-    }
   }
 
   for (let creep of getIdleCreeps()) {
@@ -82,6 +82,16 @@ function loop() {
       Action.push(creep, "haul");
     } else if (creep.memory.role === "harvester") {
       Action.push(creep, "harvest", roomInfo(creep.room).bestSource(creep));
+    } else if (creep.memory.role === "builder") {
+      const buildTarget = getConstructionSite(creep.room, 2);
+      if (buildTarget) {
+        Action.push(creep, "build", buildTarget);
+      } else {
+        const repairTarget = getMostDamagedStructure(creep.room, 2);
+        if (repairTarget) {
+          Action.push(creep, "repair", repairTarget);
+        }
+      }
     }
   }
 
@@ -98,6 +108,8 @@ function removeStaleMemory(): void {
       console.log("Clearing non-existing creep memory:", name);
     }
   }
+  Locks("repair").removeStale();
+  Locks("build").removeStale();
 }
 
 export default loop;

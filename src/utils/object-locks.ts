@@ -7,6 +7,9 @@ declare global {
     };
   }
 }
+if (!Memory.locks) {
+  Memory.locks = {};
+}
 
 interface ObjectLocks {
   [name: string]: ObjectLock[];
@@ -26,56 +29,56 @@ function Locks(name: string) {
         }
       }
     },
-    on(o: Creep | Structure | Source) {
+    on(objectId: string) {
       return {
         count(): number {
-          if (name in Memory.locks && o.id in Memory.locks[name]) {
-            return _.size(Memory.locks[name][o.id]);
+          if (name in Memory.locks && objectId in Memory.locks[name]) {
+            return _.size(Memory.locks[name][objectId]);
           } else {
             return 0;
           }
         },
-        has(c: Creep): boolean {
-          if (name in Memory.locks && o.id in Memory.locks[name]) {
-            const lockList = Memory.locks[name][o.id];
+        has(id: string): boolean {
+          if (name in Memory.locks && objectId in Memory.locks[name]) {
+            const lockList = Memory.locks[name][objectId];
             for (let objectLock of lockList) {
-              if (objectLock.lockedBy === c.id) {
+              if (objectLock.lockedBy === id) {
                 return true;
               }
             }
           }
           return false;
         },
-        acquireFor(c: Creep): void {
-          if (this.has(c)) {
+        acquireFor(id: string): void {
+          if (this.has(id)) {
             return;
           }
           if (!(name in Memory.locks)) {
             Memory.locks[name] = {};
           }
-          if (!(o.id in Memory.locks[name])) {
-            Memory.locks[name][o.id] = [];
+          if (!(objectId in Memory.locks[name])) {
+            Memory.locks[name][objectId] = [];
           }
-          const lockList = Memory.locks[name][o.id];
+          const lockList = Memory.locks[name][objectId];
           lockList.push({
-            lockedBy: c.id,
+            lockedBy: id,
             time: Game.time
           });
         },
-        releaseFor(c: Creep): void {
-          if (!this.has(c)) {
+        releaseFor(id: string): void {
+          if (!this.has(id)) {
             return;
           }
-          const lockList = Memory.locks[name][o.id];
+          const lockList = Memory.locks[name][objectId];
           let index = 0;
           for (; index < lockList.length; index++) {
-            if (lockList[index].lockedBy === c.id) {
+            if (lockList[index].lockedBy === id) {
               break;
             }
           }
           lockList.splice(index, 1);
           if (lockList.length === 0) {
-            delete Memory.locks[name][o.id];
+            delete Memory.locks[name][objectId];
             if (_.size(Memory.locks[name]) === 0) {
               delete Memory.locks[name];
             }
