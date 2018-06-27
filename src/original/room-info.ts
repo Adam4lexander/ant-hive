@@ -1,4 +1,4 @@
-import Harvest from "./harvest-action";
+import Harvest from "../actions/harvest-action";
 
 declare global {
   interface RoomMemory {

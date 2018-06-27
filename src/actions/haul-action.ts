@@ -1,4 +1,5 @@
 import { Action } from "./action";
+import Locks from "../utils/object-locks";
 
 interface CollectActionMemory {
   container: string;
@@ -71,21 +72,40 @@ Action.register({
   }
 });
 
+interface HaulActionMemory {
+  creepId: string;
+  target: string;
+}
+
+const haulLocks = Locks("haul");
+
 Action.register({
   name: "haul",
-  tick(creep, memory) {
+  entry(creep, memory: HaulActionMemory, target: Structure) {
+    memory.creepId = creep.id;
+    memory.target = target.id;
+    haulLocks.on(target.id).acquireFor(creep.id);
+  },
+  tick(creep, memory: HaulActionMemory) {
     if (creep.carry.energy === 0) {
       Action.push(creep, "collect-container");
     } else {
-      const dropAt = emptyExtension(creep.room);
+      const dropAt = Game.getObjectById(memory.target);
       if (dropAt) {
         Action.push(creep, "carry-to", dropAt);
       } else {
         Action.pop(creep);
       }
     }
+  },
+  exit(creep, memory: HaulActionMemory) {
+    haulLocks.on(memory.target).releaseFor(memory.creepId);
   }
 });
+
+function numberOfHaulers(target: Structure) {
+  return haulLocks.on(target.id).count();
+}
 
 function emptyExtension(room: Room) {
   const targets = room.find(FIND_STRUCTURES, {
@@ -103,3 +123,5 @@ function emptyExtension(room: Room) {
     return undefined;
   }
 }
+
+export { numberOfHaulers, emptyExtension };

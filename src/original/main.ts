@@ -2,7 +2,8 @@ import upgraderRole from "./upgrader-role";
 import towerRole from "./tower-role";
 import { Action, getIdleCreeps } from "../actions/action";
 import roomInfo from "./room-info";
-import "./register-actions";
+import "../actions/register-actions";
+import { numberOfHaulers, emptyExtension } from "../actions/haul-action";
 import { getConstructionSite } from "../actions/build-action";
 import { getMostDamagedStructure } from "../actions/repair-action";
 import Locks from "../utils/object-locks";
@@ -78,7 +79,7 @@ function loop() {
 
   for (let creep of getIdleCreeps()) {
     if (creep.memory.role === "hauler") {
-      Action.push(creep, "haul");
+      Action.push(creep, "haul", emptyExtension(creep.room));
     } else if (creep.memory.role === "harvester") {
       Action.push(creep, "harvest", roomInfo(creep.room).bestSource(creep));
     } else if (creep.memory.role === "builder") {
